@@ -19,6 +19,6 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
 
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent e) {
-        logger.error("Failed login for username: " + e.getAuthentication().getName());
+        logger.error("Failed login for username: {}", e.getAuthentication().getName());
     }
 }
