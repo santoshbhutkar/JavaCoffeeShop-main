@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head lang="en">
+    <title>Add Review - CoffeeShop</title>
+    <!--/*/ <th:block th:include="fragments/head :: head"></th:block> /*/-->
+  </head>
+  <body>
+    <div class="container">
+      <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+      <form th:action="@{/reviews/add}" method="post" th:object="${review}">
+        <input type="hidden" th:field="*{id}" />
+        <div class="panel panel-default">
+          <div class="panel-heading lead">Add Review</div>
+          <fieldset>
+            <div class="col-lg-12" th:if="${#fields.hasGlobalErrors()}">
+              <div class="alert alert-danger" th:each="err : ${#fields.globalErrors()}" th:text="${err}">...</div>
+            </div>
+            
+            <div class="col-lg-12 form-group" th:classappend="${#fields.hasErrors('product')} ? 'has-error'">
+              <label class="col-lg-2 control-label" for="product">Product <span class="text-danger">*</span></label>
+              <div class="col-lg-6">
+                <select id="product" class="form-control" th:field="*{product}">
+                  <option th:value="NULL">---Select Product---</option>
+                  <option th:each="product : ${products}"
+                          th:value="${{product}}"
+                          th:text="${product.productName}"
+                          th:selected="${review.product != null and review.product.id == product.id}"></option>
+                </select>
+                <small class="help-block"
+                       th:if="${#fields.hasErrors('product')}"
+                       th:errors="*{product}"></small>
+              </div>
+            </div>
+            
+            <div class="col-lg-12 form-group" th:classappend="${#fields.hasErrors('rating')} ? 'has-error'">
+              <label class="col-lg-2 control-label" for="rating">Rating <span class="text-danger">*</span></label>
+              <div class="col-lg-6">
+                <select id="rating" class="form-control" th:field="*{rating}">
+                  <option value="">---Select Rating---</option>
+                  <option th:each="i : ${#numbers.sequence(1, 5)}" 
+                          th:value="${i}" 
+                          th:text="${i + ' Star' + (i > 1 ? 's' : '')}"></option>
+                </select>
+                <small class="help-block"
+                       th:if="${#fields.hasErrors('rating')}"
+                       th:errors="*{rating}"></small>
+              </div>
+            </div>
+            
+            <div class="col-lg-12 form-group" th:classappend="${#fields.hasErrors('comment')} ? 'has-error'">
+              <label class="col-lg-2 control-label" for="comment">Comment</label>
+              <div class="col-lg-6">
+                <textarea id="comment" class="form-control" rows="5" 
+                          th:field="*{comment}" 
+                          placeholder="Write your review here (optional, max 1000 characters)"></textarea>
+                <small class="help-block"
+                       th:if="${#fields.hasErrors('comment')}"
+                       th:errors="*{comment}"></small>
+                <small class="help-block text-muted">Maximum 1000 characters</small>
+              </div>
+            </div>
+            
+            <div class="col-lg-12 form-group">
+              <label class="col-lg-2"></label>
+              <div class="col-lg-6">
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+                <a class="btn btn-default" 
+                   th:href="${review.product != null ? '/reviews/product/' + review.product.id : '/'}">
+                  Cancel
+                </a>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+

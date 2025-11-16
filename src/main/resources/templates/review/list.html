@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <head lang="en">
+    <title>Product Reviews - CoffeeShop</title>
+    <!--/*/ <th:block th:include="fragments/head :: head"></th:block> /*/-->
+  </head>
+  <body>
+    <div class="container">
+      <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 th:if="${product != null}">
+            Reviews for <span th:text="${product.productName}"></span>
+            <small>
+              <span class="label label-info" th:if="${averageRating != null and averageRating > 0}">
+                Average Rating: <span th:text="${#numbers.formatDecimal(averageRating, 1, 1)}"></span> / 5.0
+              </span>
+              <span class="label label-default" th:if="${averageRating == null or averageRating == 0}">
+                No ratings yet
+              </span>
+            </small>
+          </h2>
+          <h2 th:if="${product == null}">All Reviews</h2>
+        </div>
+        <div class="panel-body">
+          <div class="col-lg-12" th:if="${message != null}">
+            <div class="alert alert-success" th:text="${message}"></div>
+          </div>
+          <div class="col-lg-12" th:if="${error != null}">
+            <div class="alert alert-danger" th:text="${error}"></div>
+          </div>
+          
+          <div class="row" th:if="${product != null}">
+            <div class="col-lg-12">
+              <a th:href="@{/reviews/add/product/{id}(id=${product.id})}" 
+                 class="btn btn-primary" 
+                 sec:authorize="isAuthenticated()">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Review
+              </a>
+              <a th:href="@{/}" class="btn btn-default">Back to Home</a>
+            </div>
+          </div>
+          
+          <div class="row" th:if="${product == null}">
+            <div class="col-lg-12">
+              <a th:href="@{/reviews/add}" 
+                 class="btn btn-primary" 
+                 sec:authorize="isAuthenticated()">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Review
+              </a>
+              <a th:href="@{/}" class="btn btn-default">Back to Home</a>
+            </div>
+          </div>
+          
+          <div class="row" style="margin-top: 20px;">
+            <div class="col-lg-12" th:if="${reviews != null and !reviews.isEmpty()}">
+              <div class="review-item" th:each="review : ${reviews}" style="border-bottom: 1px solid #eee; padding: 15px 0;">
+                <div class="row">
+                  <div class="col-md-2">
+                    <strong th:text="${review.person.username}"></strong>
+                    <br/>
+                    <small class="text-muted" th:text="${#temporals.format(review.reviewDate, 'dd/MM/yyyy HH:mm')}"></small>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="rating" style="margin-bottom: 5px;">
+                      <span th:each="i : ${#numbers.sequence(1, 5)}">
+                        <span class="glyphicon" 
+                              th:classappend="${i <= review.rating} ? 'glyphicon-star' : 'glyphicon-star-empty'"
+                              style="color: #ffc107;"></span>
+                      </span>
+                      <strong th:text="'(' + ${review.rating} + '/5)'"></strong>
+                    </div>
+                    <p th:text="${review.comment}" style="margin-top: 10px;" th:if="${review.comment != null and !review.comment.isEmpty()}"></p>
+                    <div th:if="${product == null}">
+                      <small class="text-muted">
+                        Product: <a th:href="@{/reviews/product/{id}(id=${review.product.id})}" 
+                                    th:text="${review.product.productName}"></a>
+                      </small>
+                    </div>
+                  </div>
+                  <div class="col-md-2" sec:authorize="isAuthenticated()">
+                    <a th:href="@{/reviews/delete/{id}(id=${review.id})}" 
+                       class="btn btn-danger btn-xs"
+                       th:if="${#authentication.name == review.person.username or hasRole('ROLE_ADMIN')}"
+                       onclick="return confirm('Are you sure you want to delete this review?');">
+                      <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12" th:if="${reviews == null or reviews.isEmpty()}">
+              <div class="alert alert-info">
+                <p th:if="${product != null}">No reviews yet for this product. Be the first to review!</p>
+                <p th:if="${product == null}">No reviews found.</p>
+                <a th:href="@{/reviews/add/product/{id}(id=${product.id})}" 
+                   class="btn btn-primary"
+                   sec:authorize="isAuthenticated()"
+                   th:if="${product != null}">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add First Review
+                </a>
+                <a th:href="@{/reviews/add}" 
+                   class="btn btn-primary"
+                   sec:authorize="isAuthenticated()"
+                   th:if="${product == null}">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Review
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
