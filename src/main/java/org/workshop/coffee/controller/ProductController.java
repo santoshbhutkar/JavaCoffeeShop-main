@@ -23,6 +23,8 @@ import java.io.PrintWriter;
 @Controller
 @RequestMapping("/products")
 public class ProductController {
+    private static final String PRODUCT_EDIT_VIEW = "product/edit";
+    
     private ProductService productService;
 
     @Autowired
@@ -33,7 +35,7 @@ public class ProductController {
     @GetMapping("/add")
     public String showProductAdd(Model model) {
         model.addAttribute("product", new Product());
-        return "product/edit";
+        return PRODUCT_EDIT_VIEW;
     }
 
     @PostMapping({"/edit/{id}", "/add"})
@@ -41,7 +43,7 @@ public class ProductController {
         boolean isAdd = product.getId() == null;
 
         if (result.hasErrors()) {
-            return "product/edit";
+            return PRODUCT_EDIT_VIEW;
         }
 
         productService.save(product);
@@ -58,7 +60,7 @@ public class ProductController {
     @GetMapping("/edit/{id}")
     public String showProductEdit(@PathVariable Long id, Model model) {
         model.addAttribute("product", productService.getProduct(id));
-        return "product/edit";
+        return PRODUCT_EDIT_VIEW;
     }
 
     @GetMapping("/delete/{id}")
