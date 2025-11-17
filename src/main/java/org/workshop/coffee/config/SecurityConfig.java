@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .antMatchers("/").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .antMatchers("/", "/webjars/**", "/css/**", "/home", "/index", "/register", "/products/direct/**","/image/**").permitAll()
-                .antMatchers("/orders/add", "/orders/myorders/**", "/uploadimage").hasAnyRole("ADMIN", "CUSTOMER")
+                .antMatchers("/orders/add", "/orders/myorders/**", "/uploadimage", "/loyalty/**").hasAnyRole("ADMIN", "CUSTOMER")
                 .antMatchers("/products/**", "/orders/**", "/persons/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

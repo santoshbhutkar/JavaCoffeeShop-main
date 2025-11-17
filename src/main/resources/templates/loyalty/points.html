@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head lang="en">
+    <title>Loyalty Points - CoffeeShop</title>
+    <!--/*/ <th:block th:include="fragments/head :: head"></th:block> /*/-->
+  </head>
+  <body>
+    <div class="container">
+      <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2>My Loyalty Points</h2>
+        </div>
+        <div class="panel-body">
+          <div class="col-lg-12" th:if="${message != null}">
+            <div class="alert alert-success" th:text="${message}"></div>
+          </div>
+          <div class="col-lg-12" th:if="${error != null}">
+            <div class="alert alert-danger" th:text="${error}"></div>
+          </div>
+          
+          <!-- Points Balance Card -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Current Balance</h3>
+                </div>
+                <div class="panel-body" style="text-align: center; padding: 30px;">
+                  <h1 style="font-size: 48px; color: #337ab7; margin: 0;">
+                    <span th:text="${balance}">0</span>
+                  </h1>
+                  <p style="font-size: 18px; margin-top: 10px;">Points</p>
+                  <p class="text-muted" th:if="${discountValue > 0}">
+                    = $<span th:text="${#numbers.formatDecimal(discountValue, 1, 2)}">0.00</span> discount value
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="panel panel-info">
+                <div class="panel-heading">
+                  <h3 class="panel-title">How It Works</h3>
+                </div>
+                <div class="panel-body">
+                  <ul style="list-style: none; padding-left: 0;">
+                    <li style="margin-bottom: 10px;">
+                      <strong>Earn Points:</strong> Get <span th:text="${pointsPerDollar}">10</span> points for every $1 spent
+                    </li>
+                    <li style="margin-bottom: 10px;">
+                      <strong>Redeem Points:</strong> <span th:text="${pointsForRedemption}">100</span> points = $1 discount
+                    </li>
+                    <li style="margin-bottom: 10px;">
+                      <strong>Use Discount:</strong> Redeem points to get discounts on your orders
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Redeem Points Form -->
+          <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Redeem Points</h3>
+                </div>
+                <div class="panel-body">
+                  <form th:action="@{/loyalty/redeem}" method="post">
+                    <div class="form-group">
+                      <label for="pointsToRedeem">Points to Redeem:</label>
+                      <div class="input-group" style="max-width: 300px;">
+                        <input type="number" 
+                               id="pointsToRedeem" 
+                               name="pointsToRedeem" 
+                               class="form-control" 
+                               min="1" 
+                               th:max="${balance}"
+                               placeholder="Enter points"
+                               required/>
+                        <span class="input-group-btn">
+                          <button type="submit" class="btn btn-primary" th:disabled="${balance == 0}">
+                            Redeem
+                          </button>
+                        </span>
+                      </div>
+                      <small class="help-block text-muted">
+                        You have <strong th:text="${balance}">0</strong> points available.
+                        Minimum redemption: <span th:text="${pointsForRedemption}">100</span> points.
+                      </small>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transaction History -->
+          <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Transaction History</h3>
+                </div>
+                <div class="panel-body">
+                  <div th:if="${transactions == null or transactions.isEmpty()}">
+                    <p class="text-muted">No transactions yet. Start earning points by placing orders!</p>
+                  </div>
+                  <table class="table table-striped" th:if="${transactions != null and !transactions.isEmpty()}">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Points</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr th:each="transaction : ${transactions}">
+                        <td th:text="${#temporals.format(transaction.transactionDate, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
+                          <span class="label" 
+                                th:classappend="${transaction.type.name() == 'EARNED'} ? 'label-success' : 
+                                               (${transaction.type.name() == 'REDEEMED'} ? 'label-warning' : 'label-info')"
+                                th:text="${transaction.type.name()}"></span>
+                        </td>
+                        <td>
+                          <strong th:classappend="${transaction.points < 0} ? 'text-danger' : 'text-success'"
+                                  th:text="${transaction.points > 0 ? '+' : ''} + ${transaction.points}"></strong>
+                        </td>
+                        <td th:text="${transaction.description}"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

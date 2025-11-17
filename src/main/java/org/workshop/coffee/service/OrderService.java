@@ -14,8 +14,14 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private LoyaltyPointsService loyaltyPointsService;
+
     public Order save(Order order) {
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        // Award loyalty points for the order
+        loyaltyPointsService.earnPointsFromOrder(savedOrder);
+        return savedOrder;
     }
 
     public void delete(Order order) {
