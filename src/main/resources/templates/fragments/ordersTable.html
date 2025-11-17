@@ -17,6 +17,7 @@
               <th width="200">Person</th>
               <th width="120">Total Amount</th>
               <th>Products</th>
+              <th width="120">QR Code</th>
             </tr>
           </thead>
           <tbody>
@@ -30,6 +31,24 @@
                   <li th:each="orderLine : ${order.orderLines}"
                       th:text="${orderLine.productName + ' (' + orderLine.quantity + ')'}"></li>
                 </ul>
+              </td>
+              <td>
+                <a th:href="@{/orders/{id}/qrcode(id=${order.id})}" 
+                   target="_blank" 
+                   title="View QR Code">
+                  <img th:src="@{/orders/{id}/qrcode(id=${order.id})}" 
+                       alt="QR Code" 
+                       style="width: 80px; height: 80px; border: 1px solid #ddd; padding: 5px; background: white;" />
+                </a>
+                <br/>
+                <small>
+                  <a th:href="@{/orders/{id}/qrcode(id=${order.id})}" 
+                     th:download="'order-' + ${order.id} + '-qrcode.png'"
+                     class="btn btn-xs btn-default"
+                     style="margin-top: 5px;">
+                    <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Download
+                  </a>
+                </small>
               </td>
             </tr>
           </tbody>

@@ -10,6 +10,7 @@ import org.workshop.coffee.export.YamlImportExport;
 import org.workshop.coffee.service.OrderService;
 import org.workshop.coffee.service.PersonService;
 import org.workshop.coffee.service.ProductService;
+import org.workshop.coffee.service.QrCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,10 +30,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import com.google.zxing.WriterException;
 
 @Controller
 @RequestMapping("/orders")
@@ -39,6 +45,7 @@ public class OrderController {
     @Autowired private ProductService productService;
     @Autowired private OrderService orderService;
     @Autowired private PersonService personService;
+    @Autowired private QrCodeService qrCodeService;
 
 
 
@@ -53,6 +60,7 @@ public class OrderController {
         var user = principal.getName();
         var person = personService.findByUsername(user);
         model.addAttribute("orders", orderService.findByPerson(person));
+        model.addAttribute("isMyOrders", true);
         return "order/mylist";
     }
 
@@ -185,5 +193,57 @@ public class OrderController {
     public String listOrders(Model model) {
         model.addAttribute("orders", orderService.findAll());
         return "order/list";
+    }
+
+    @GetMapping(value = "/{id}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] generateOrderQrCode(@PathVariable Long id, Principal principal) 
+            throws WriterException, IOException {
+        Order order = orderService.findById(id);
+        
+        // Security check: users can only generate QR codes for their own orders
+        // Admins can generate for any order
+        String username = principal.getName();
+        boolean isAdmin = personService.findByUsername(username).getRoles() == org.workshop.coffee.domain.Role.ROLE_ADMIN;
+        boolean isOwner = order.getPerson().getUsername().equals(username);
+        
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("You don't have permission to view this order's QR code.");
+        }
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String orderDate = dateFormat.format(order.getOrderDate());
+        String customerName = order.getPerson().getFirstName() + " " + order.getPerson().getLastName();
+        
+        return qrCodeService.generateOrderQrCode(
+            order.getId(),
+            customerName,
+            orderDate,
+            order.getTotalAmount()
+        );
+    }
+
+    @GetMapping(value = "/myorders/{id}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] generateMyOrderQrCode(@PathVariable Long id, Principal principal) 
+            throws WriterException, IOException {
+        Order order = orderService.findById(id);
+        
+        // Verify the order belongs to the current user
+        String username = principal.getName();
+        if (!order.getPerson().getUsername().equals(username)) {
+            throw new RuntimeException("You don't have permission to view this order's QR code.");
+        }
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String orderDate = dateFormat.format(order.getOrderDate());
+        String customerName = order.getPerson().getFirstName() + " " + order.getPerson().getLastName();
+        
+        return qrCodeService.generateOrderQrCode(
+            order.getId(),
+            customerName,
+            orderDate,
+            order.getTotalAmount()
+        );
     }
 }
