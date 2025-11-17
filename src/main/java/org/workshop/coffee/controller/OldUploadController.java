@@ -16,12 +16,10 @@ public class OldUploadController {
     public static String UPLOAD_DIRECTORY = System.getProperty("user.dir") + "/uploads";
 
 
-        public String uploadImage(Model model, MultipartFile file, Principal principal) throws IOException {
-        var name = file.getOriginalFilename().replace(" ", "_");
+    public String uploadImage(Model model, MultipartFile file, Principal principal) throws IOException {
+        var name = Paths.get(file.getOriginalFilename()).getFileName().toString().replace(" ", "_");
         var fileNameAndPath = Paths.get(UPLOAD_DIRECTORY, name);
         Files.write(fileNameAndPath, file.getBytes());
-            model.addAttribute("msg", "Uploaded images: " + name);
-
         if (principal == null) {
             model.addAttribute("message", "ERROR");
             return "person/upload";
